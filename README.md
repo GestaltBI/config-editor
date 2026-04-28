@@ -26,6 +26,28 @@ npm run tauri:dev    # opens the desktop window
 npm start            # http://localhost:1420
 ```
 
+## Installing a pre-built release
+
+Grab a binary from the [Releases page](https://github.com/GestaltBI/config-editor/releases). All builds are unsigned-but-ad-hoc-stamped — proper Apple/Microsoft signing is on the roadmap.
+
+### macOS — "the app is damaged" / *"è danneggiata"*
+
+Misleading message: it's not damaged, it's just not notarized by Apple. Run once after installing:
+
+```sh
+xattr -cr "/Applications/GestaltBI Config Editor.app"
+```
+
+Then launch normally. The `com.apple.quarantine` xattr is only set on first download; subsequent launches don't need this. On macOS 15 (Sequoia) the alternative right-click → Open path is gone, so this is the simplest fix.
+
+### Windows — SmartScreen warning
+
+Click *More info → Run anyway* on the first launch. Same root cause (no code-signing certificate yet).
+
+### Linux — no warning
+
+Just `chmod +x` the AppImage and run it, or `dpkg -i` the .deb.
+
 ## Auth
 
 The app uses a **GitHub personal access token** with `repo` scope, stored in `localStorage` for now. Click **Open repo** in the toolbar, paste the token, the org/repo name, optional branch (default `master`).
