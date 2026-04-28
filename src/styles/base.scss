@@ -1,0 +1,101 @@
+// =============================================================================
+// Base resets, html / body, and global behaviors.
+// =============================================================================
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: var(--leading-base);
+  letter-spacing: var(--letter-base);
+  font-feature-settings:
+    'ss01' on,
+    'cv11' on;
+}
+
+// Inherit fonts everywhere — Material's component styles otherwise reset
+// to system defaults inside their elements.
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-color: color-mix(in oklch, var(--accent), transparent 60%);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition: color var(--motion-fast) var(--ease-out-quart);
+}
+a:hover {
+  color: var(--accent-strong);
+  text-decoration-color: var(--accent);
+}
+
+// Focus rings — visible only via keyboard. We replace the default outline
+// with a 2-ring scheme: a subtle inner spacer + a saturated outer ring.
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+// Selection
+::selection {
+  background: color-mix(in oklch, var(--accent), transparent 80%);
+  color: var(--ink);
+}
+
+// Scrollbars — narrow, tinted to brand. Webkit/Blink + Firefox.
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--rule-strong);
+  border-radius: var(--r-pill);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-faint);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+// Reduced motion: keep functional motion but cut the durations.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

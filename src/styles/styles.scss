@@ -1,0 +1,22 @@
+@use '@angular/material' as mat;
+@use 'ag-grid-community/styles/ag-grid.css';
+@use 'ag-grid-community/styles/ag-theme-alpine.css';
+
+@use 'tokens';
+@use 'base';
+@use 'typography';
+@use 'controls';
+@use 'mat-overrides';
+
+html {
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$cyan-palette,
+      ),
+      typography: 'Funnel Sans',
+      density: 0,
+    )
+  );
+}

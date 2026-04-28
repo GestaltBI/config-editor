@@ -1,0 +1,45 @@
+<div class="structure" *ngIf="store.isLoaded(); else empty">
+  <header class="structure__head">
+    <div>
+      <span class="eyebrow">structure.json</span>
+      <h1 class="structure__title">{{ meta().name || 'Untitled dataset' }}</h1>
+      <p class="structure__sub">
+        {{ rowData().length }} columns &middot; v{{ meta().version }}
+      </p>
+    </div>
+    <div class="structure__actions">
+      <button class="btn btn--ghost btn--sm" (click)="removeSelected(grid.api)">
+        <mat-icon>delete</mat-icon> Remove selected
+      </button>
+      <button class="btn btn--solid btn--sm" (click)="addRow()">
+        <mat-icon>add</mat-icon> Add column
+      </button>
+    </div>
+  </header>
+
+  <ag-grid-angular
+    #grid
+    class="ag-theme-alpine structure__grid"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [rowData]="rowData()"
+    [rowSelection]="'multiple'"
+    [suppressRowClickSelection]="true"
+    [singleClickEdit]="true"
+    (cellValueChanged)="onCellValueChanged()"
+  >
+  </ag-grid-angular>
+
+  <p class="structure__hint t-caption">
+    Tags drive the entire pipeline. Common ones: <code>uatu:dimension</code> for dimensions,
+    <code>gcx:lat</code>/<code>gcx:lon</code> for geocoding, <code>uatu:aggregable</code> for measures
+    that show up in the legend selector.
+  </p>
+</div>
+
+<ng-template #empty>
+  <div class="structure__empty">
+    <mat-icon>folder_open</mat-icon>
+    <p>Open a config repo to edit its structure.</p>
+  </div>
+</ng-template>

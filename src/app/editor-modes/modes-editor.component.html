@@ -1,0 +1,67 @@
+<div class="modes" *ngIf="store.isLoaded(); else empty">
+  <header class="modes__head">
+    <div>
+      <span class="eyebrow">modes.json</span>
+      <h1 class="modes__title">Analysis modes</h1>
+      <p class="modes__sub">{{ store.modes().length }} entries · drag to reorder</p>
+    </div>
+    <div class="modes__actions">
+      <button class="btn btn--ghost btn--sm" (click)="addDivider()">
+        <mat-icon>horizontal_rule</mat-icon> Divider
+      </button>
+      <button class="btn btn--solid btn--sm" (click)="addButton()">
+        <mat-icon>add</mat-icon> Mode
+      </button>
+    </div>
+  </header>
+
+  <ol class="modes__list" cdkDropList (cdkDropListDropped)="drop($event)">
+    <li
+      class="modes__row"
+      *ngFor="let m of store.modes(); let i = index"
+      [class.modes__row--divider]="m.type === 'divider'"
+      cdkDrag
+    >
+      <span class="modes__drag" cdkDragHandle aria-label="Drag">
+        <mat-icon>drag_indicator</mat-icon>
+      </span>
+
+      <ng-container *ngIf="m.type === 'button'; else dividerRow">
+        <input
+          class="modes__id"
+          [value]="m.id ?? ''"
+          (change)="update(i, { id: $any($event.target).value })"
+          placeholder="id"
+        />
+        <input
+          class="modes__labelkey"
+          [value]="m.labelKey ?? ''"
+          (change)="update(i, { labelKey: $any($event.target).value })"
+          placeholder="modes.long"
+        />
+        <select
+          class="modes__icon"
+          [value]="m.icon ?? ''"
+          (change)="update(i, { icon: $any($event.target).value })"
+        >
+          <option *ngFor="let icon of icons" [value]="icon">{{ icon }}</option>
+        </select>
+      </ng-container>
+
+      <ng-template #dividerRow>
+        <span class="modes__divider-label">— divider —</span>
+      </ng-template>
+
+      <button class="modes__remove" (click)="remove(i)" aria-label="Remove">
+        <mat-icon>close</mat-icon>
+      </button>
+    </li>
+  </ol>
+</div>
+
+<ng-template #empty>
+  <div class="modes__empty">
+    <mat-icon>list_alt</mat-icon>
+    <p>Open a config repo to edit its modes.</p>
+  </div>
+</ng-template>

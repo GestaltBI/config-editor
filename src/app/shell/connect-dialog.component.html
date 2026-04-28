@@ -1,0 +1,40 @@
+<div class="connect">
+  <h2 class="connect__title">Open a config repo</h2>
+  <p class="connect__lede">
+    The editor reads and writes the six config files via the GitHub API. A personal access
+    token with <code>repo</code> scope is required to push.
+  </p>
+
+  <div class="connect__row">
+    <mat-form-field appearance="outline">
+      <mat-label>Organization</mat-label>
+      <input matInput [(ngModel)]="org" placeholder="GestaltBI" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Repo</mat-label>
+      <input matInput [(ngModel)]="repo" placeholder="sample-config" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="connect__ref">
+      <mat-label>Branch</mat-label>
+      <input matInput [(ngModel)]="ref" placeholder="master" />
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="connect__token">
+    <mat-label>Personal access token</mat-label>
+    <input matInput type="password" [(ngModel)]="token" placeholder="ghp_…" />
+    <mat-hint>Stored locally, never sent anywhere except api.github.com.</mat-hint>
+  </mat-form-field>
+
+  <p class="connect__error" *ngIf="error">{{ error }}</p>
+
+  <div class="connect__actions">
+    <button class="btn btn--ghost" (click)="close()">Cancel</button>
+    <button class="btn btn--solid" (click)="load()" [disabled]="gh.busy()">
+      <mat-icon>folder_open</mat-icon>
+      <span>{{ gh.busy() ? 'Loading…' : 'Open' }}</span>
+    </button>
+  </div>
+</div>

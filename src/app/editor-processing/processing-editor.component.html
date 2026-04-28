@@ -1,0 +1,90 @@
+<div class="processing" *ngIf="store.isLoaded(); else empty">
+  <header class="processing__head">
+    <div>
+      <span class="eyebrow">processing.json</span>
+      <h1 class="processing__title">Process graph</h1>
+      <p class="processing__sub">
+        {{ nodes().length }} steps &middot; rete.js visual graph coming next milestone
+      </p>
+    </div>
+    <div class="processing__actions">
+      <button class="btn btn--ghost btn--sm" (click)="enterRaw()">
+        <mat-icon>code</mat-icon> Raw JSON
+      </button>
+      <button class="btn btn--solid btn--sm" (click)="addNode()">
+        <mat-icon>add</mat-icon> Add step
+      </button>
+    </div>
+  </header>
+
+  <div class="processing__body" *ngIf="!rawMode(); else raw">
+    <aside class="processing__list">
+      <div
+        class="processing__node"
+        *ngFor="let n of nodes()"
+        [class.processing__node--active]="selectedName() === n.name"
+        (click)="select(n.name)"
+      >
+        <span class="processing__node-name">{{ n.name }}</span>
+        <span class="processing__node-op">{{ n.spec.op || '—' }}</span>
+        <button class="processing__node-remove" (click)="removeNode(n.name); $event.stopPropagation()" aria-label="Remove">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </aside>
+
+    <section class="processing__detail" *ngIf="selected() as node; else nodePlaceholder">
+      <div class="processing__field">
+        <label>Op</label>
+        <select [value]="node.spec.op || ''" (change)="updateOp(node.name, $any($event.target).value)">
+          <option *ngFor="let op of ops" [value]="op">{{ op }}</option>
+        </select>
+      </div>
+
+      <div class="processing__field">
+        <label>Require <span class="processing__hint">(comma-separated names of upstream steps)</span></label>
+        <input
+          [value]="requireText(node)"
+          (change)="updateRequire(node.name, $any($event.target).value)"
+          placeholder="step_1, step_2"
+        />
+      </div>
+
+      <div class="processing__field">
+        <label>Options <span class="processing__hint">(JSON; op-specific)</span></label>
+        <textarea
+          rows="14"
+          [value]="optionsText(node)"
+          (change)="updateOptions(node.name, $any($event.target).value)"
+          spellcheck="false"
+        ></textarea>
+      </div>
+    </section>
+
+    <ng-template #nodePlaceholder>
+      <div class="processing__placeholder">
+        <mat-icon>account_tree</mat-icon>
+        <p>Pick a step on the left to edit it.</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <ng-template #raw>
+    <div class="processing__raw">
+      <textarea spellcheck="false" [(ngModel)]="$any(jsonText)['_value']"
+        (input)="jsonText.set($any($event.target).value)"
+      >{{ jsonText() }}</textarea>
+      <div class="processing__raw-actions">
+        <button class="btn btn--ghost btn--sm" (click)="cancelRaw()">Cancel</button>
+        <button class="btn btn--solid btn--sm" (click)="applyRaw()">Apply</button>
+      </div>
+    </div>
+  </ng-template>
+</div>
+
+<ng-template #empty>
+  <div class="processing__empty">
+    <mat-icon>account_tree</mat-icon>
+    <p>Open a config repo to edit its processing graph.</p>
+  </div>
+</ng-template>

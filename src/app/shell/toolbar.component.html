@@ -1,0 +1,39 @@
+<header class="toolbar" role="banner">
+  <div class="toolbar__brand">
+    <span class="toolbar__name">GestaltBI</span>
+    <span class="toolbar__role">config editor</span>
+  </div>
+
+  <div class="toolbar__repo" *ngIf="store.isLoaded(); else placeholder">
+    <mat-icon>folder_open</mat-icon>
+    <span class="toolbar__repo-text">
+      {{ store.repoOrg() }}/{{ store.repoName() }}
+      <span class="toolbar__repo-ref">@{{ store.repoRef() }}</span>
+    </span>
+    <span class="toolbar__dirty" *ngIf="store.isDirty()" title="Unsaved changes">●</span>
+    <button class="toolbar__icon" (click)="connect()" aria-label="Switch repo">
+      <mat-icon>swap_horiz</mat-icon>
+    </button>
+  </div>
+  <ng-template #placeholder>
+    <button class="btn btn--outline btn--sm toolbar__connect" (click)="connect()">
+      <mat-icon>folder_open</mat-icon>
+      Open repo
+    </button>
+  </ng-template>
+
+  <div class="toolbar__actions">
+    <span class="toolbar__status" *ngIf="gh.status()">{{ gh.status() }}</span>
+    <button class="toolbar__icon" (click)="toggleTheme()" aria-label="Toggle theme">
+      <mat-icon>{{ theme.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </button>
+    <button
+      class="btn btn--solid btn--sm"
+      (click)="push()"
+      [disabled]="gh.busy() || !store.isLoaded()"
+    >
+      <mat-icon>cloud_upload</mat-icon>
+      <span>Push</span>
+    </button>
+  </div>
+</header>

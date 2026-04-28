@@ -1,0 +1,101 @@
+.toolbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-lg);
+  height: var(--shell-toolbar-h);
+  padding: 0 var(--space-lg);
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule);
+
+  &__brand {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-xs);
+  }
+  &__name {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  &__role {
+    font-size: var(--text-xs);
+    color: var(--ink-muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  &__repo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 0 var(--space-md);
+    height: 36px;
+    border-radius: var(--r-pill);
+    background: var(--surface-2);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-feature-settings: 'tnum';
+    justify-self: center;
+
+    .mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: var(--ink-muted);
+    }
+  }
+  &__repo-ref {
+    color: var(--ink-muted);
+  }
+  &__dirty {
+    color: var(--accent);
+    font-size: 1.4em;
+    line-height: 1;
+  }
+
+  &__connect {
+    justify-self: center;
+  }
+
+  &__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    justify-self: end;
+  }
+
+  &__status {
+    font-size: var(--text-xs);
+    color: var(--ink-muted);
+    margin-right: var(--space-xs);
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-radius: var(--r-md);
+    transition:
+      background-color var(--motion-fast) var(--ease-out-quart),
+      color var(--motion-fast) var(--ease-out-quart);
+    .mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+    &:hover {
+      background: var(--surface-2);
+      color: var(--ink);
+    }
+  }
+}

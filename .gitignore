@@ -1,0 +1,23 @@
+# —— Node ————————————————————————————————————————
+/node_modules
+npm-debug.log*
+yarn-error.log
+.pnpm-debug.log*
+
+# —— Angular ——————————————————————————————————————
+/dist
+/.angular
+/out-tsc
+/tmp
+
+# —— Tauri ——————————————————————————————————————————
+/src-tauri/target
+/src-tauri/Cargo.lock
+/src-tauri/gen/schemas
+
+# —— OS / editor ————————————————————————————————————
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+*.swp

@@ -1,0 +1,190 @@
+// =============================================================================
+// GestaltBI design tokens
+// All values OKLCH; neutrals tinted toward brand hue 240 for cohesion.
+// =============================================================================
+
+:root {
+  // —— Backgrounds & surfaces ————————————————————————————————————————————————
+  --bg: oklch(98.5% 0.005 240);
+  --bg-tinted: oklch(97% 0.012 245);
+  --surface: oklch(96% 0.008 240);
+  --surface-2: oklch(93% 0.012 240);
+  --surface-3: oklch(89% 0.014 240);
+  --rule: oklch(85% 0.014 240);
+  --rule-strong: oklch(72% 0.020 240);
+
+  // —— Ink (text) ————————————————————————————————————————————————————————————
+  --ink: oklch(18% 0.024 245);
+  --ink-soft: oklch(34% 0.022 245);
+  --ink-muted: oklch(52% 0.018 245);
+  --ink-faint: oklch(68% 0.014 245);
+
+  // —— Brand spectrum (G-mark logo: blue → teal → green → yellow → orange → red)
+  --brand-deep: oklch(38% 0.18 248);
+  --brand-blue: oklch(55% 0.19 232);
+  --brand-teal: oklch(64% 0.16 195);
+  --brand-green: oklch(72% 0.20 148);
+  --brand-yellow: oklch(83% 0.18 92);
+  --brand-orange: oklch(66% 0.20 50);
+  --brand-red: oklch(58% 0.22 28);
+
+  // —— Primary accent (terracotta-leaning, distinctive in the BI category) ——
+  --accent: oklch(60% 0.18 38);
+  --accent-strong: oklch(50% 0.20 35);
+  --accent-soft: oklch(94% 0.05 38);
+  --accent-on: oklch(99% 0.002 38);
+
+  // —— Change-direction signals ——————————————————————————————————————————————
+  --pos: oklch(56% 0.16 148);
+  --pos-soft: oklch(94% 0.04 148);
+  --neg: oklch(58% 0.22 28);
+  --neg-soft: oklch(94% 0.05 28);
+
+  // —— States ————————————————————————————————————————————————————————————————
+  --focus: oklch(58% 0.20 248);
+  --focus-glow: oklch(58% 0.20 248 / 0.25);
+
+  // —— Spectrum: the "spotlight" gradient. Use sparingly.  ——————————————————
+  --spectrum: linear-gradient(
+    105deg,
+    var(--brand-deep) 0%,
+    var(--brand-blue) 16%,
+    var(--brand-teal) 32%,
+    var(--brand-green) 50%,
+    var(--brand-yellow) 68%,
+    var(--brand-orange) 84%,
+    var(--brand-red) 100%
+  );
+  --spectrum-soft: linear-gradient(
+    105deg,
+    color-mix(in oklch, var(--brand-deep), var(--bg) 70%),
+    color-mix(in oklch, var(--brand-orange), var(--bg) 75%)
+  );
+
+  // —— Typography ————————————————————————————————————————————————————————————
+  --font-display: 'Bricolage Grotesque', 'Funnel Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Funnel Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, monospace;
+
+  --text-2xs: 0.6875rem; // 11
+  --text-xs: 0.75rem; // 12
+  --text-sm: 0.8125rem; // 13
+  --text-md: 0.9375rem; // 15  — body default; smaller than 16 makes UI feel denser
+  --text-base: 1rem; // 16
+  --text-lg: 1.1875rem; // 19
+  --text-xl: 1.5rem; // 24
+  --text-2xl: 2rem; // 32
+  --text-3xl: 2.625rem; // 42
+  --text-4xl: 3.5rem; // 56
+  --text-5xl: 5rem; // 80
+
+  --leading-tight: 1.05;
+  --leading-snug: 1.25;
+  --leading-base: 1.5;
+  --leading-loose: 1.7;
+
+  --letter-tight: -0.022em;
+  --letter-base: -0.005em;
+  --letter-wide: 0.04em;
+
+  // —— Space (4pt scale with 12 inserted) ————————————————————————————————————
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-ml: 20px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 96px;
+
+  // —— Radius ————————————————————————————————————————————————————————————————
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 28px;
+  --r-pill: 9999px;
+
+  // —— Motion ————————————————————————————————————————————————————————————————
+  --motion-fast: 140ms;
+  --motion-base: 220ms;
+  --motion-slow: 380ms;
+  --motion-hero: 640ms;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); // ease-out-expo
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-in-quart: cubic-bezier(0.5, 0, 0.75, 0);
+
+  // —— Elevation ————————————————————————————————————————————————————————————
+  // Tinted toward brand hue at low chroma for cohesion. Never plain black.
+  --shadow-sm: 0 1px 2px oklch(20% 0.06 245 / 0.08);
+  --shadow-md: 0 6px 20px oklch(20% 0.06 245 / 0.08), 0 2px 4px oklch(20% 0.06 245 / 0.06);
+  --shadow-lg: 0 18px 48px oklch(20% 0.06 245 / 0.12), 0 4px 12px oklch(20% 0.06 245 / 0.08);
+  --shadow-rim: inset 0 0 0 1px var(--rule);
+  --shadow-rim-strong: inset 0 0 0 1px var(--rule-strong);
+
+  // —— Layout —————————————————————————————————————————————————————————————————
+  --shell-toolbar-h: 64px;
+  --shell-statusbar-h: 56px;
+  --shell-side-w: 320px;
+  --content-max: 1440px;
+
+  color-scheme: light;
+}
+
+// =============================================================================
+// Dark theme — flip backgrounds and ink, keep brand & accent close to light
+// (terracotta still reads on dark; only chroma adjusted for higher saturation
+// at darker contexts). Triggered by [data-theme='dark'] on <html>.
+// =============================================================================
+:root[data-theme='dark'] {
+  --bg: oklch(15% 0.014 245);
+  --bg-tinted: oklch(18% 0.018 245);
+  --surface: oklch(20% 0.016 245);
+  --surface-2: oklch(25% 0.018 245);
+  --surface-3: oklch(30% 0.020 245);
+  --rule: oklch(34% 0.020 245);
+  --rule-strong: oklch(46% 0.024 245);
+
+  --ink: oklch(96% 0.008 245);
+  --ink-soft: oklch(82% 0.012 245);
+  --ink-muted: oklch(64% 0.016 245);
+  --ink-faint: oklch(48% 0.018 245);
+
+  // Brand spectrum: keep hues, slightly raise lightness for dark backdrop.
+  --brand-deep: oklch(50% 0.20 248);
+  --brand-blue: oklch(64% 0.20 232);
+  --brand-teal: oklch(70% 0.16 195);
+  --brand-green: oklch(76% 0.20 148);
+  --brand-yellow: oklch(86% 0.18 92);
+  --brand-orange: oklch(72% 0.20 50);
+  --brand-red: oklch(66% 0.22 28);
+
+  --accent: oklch(68% 0.18 38);
+  --accent-strong: oklch(76% 0.16 38);
+  --accent-soft: oklch(28% 0.07 38);
+  --accent-on: oklch(15% 0.02 38);
+
+  --pos: oklch(70% 0.16 148);
+  --pos-soft: oklch(28% 0.05 148);
+  --neg: oklch(68% 0.20 28);
+  --neg-soft: oklch(28% 0.07 28);
+
+  --focus: oklch(68% 0.18 248);
+  --focus-glow: oklch(68% 0.18 248 / 0.30);
+
+  --spectrum-soft: linear-gradient(
+    105deg,
+    color-mix(in oklch, var(--brand-deep), var(--bg) 60%),
+    color-mix(in oklch, var(--brand-orange), var(--bg) 65%)
+  );
+
+  // Tinted shadows shift to deeper / lower-chroma for dark mode.
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.5);
+  --shadow-md: 0 6px 20px oklch(0% 0 0 / 0.45), 0 2px 4px oklch(0% 0 0 / 0.3);
+  --shadow-lg: 0 18px 48px oklch(0% 0 0 / 0.55), 0 4px 12px oklch(0% 0 0 / 0.35);
+
+  color-scheme: dark;
+}

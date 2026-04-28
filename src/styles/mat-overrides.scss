@@ -1,0 +1,154 @@
+// =============================================================================
+// Targeted overrides for Angular Material components used in this app.
+// Goal: keep Material's behavior, restyle the chrome to match our system.
+// =============================================================================
+
+// —— Material Symbols (replacing the legacy Material Icons font) ——————————————
+// All <mat-icon> with text (e.g. <mat-icon>menu</mat-icon>) renders via this.
+.mat-icon,
+.material-icons,
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded' !important;
+  font-weight: 400;
+  font-style: normal;
+  font-feature-settings: 'liga';
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+// —— Cards ————————————————————————————————————————————————————————————————————
+// Material's default card has a heavy chrome and shadow. Strip both —
+// our cards earn lift only when raised.
+.mat-mdc-card,
+.mat-card {
+  background: var(--surface) !important;
+  border-radius: var(--r-lg) !important;
+  box-shadow: var(--shadow-rim) !important;
+  color: var(--ink) !important;
+  padding: var(--space-lg) !important;
+}
+
+// —— Buttons ——————————————————————————————————————————————————————————————————
+// Make Material buttons inherit our type and pill radius.
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-outlined-button,
+.mat-mdc-flat-button {
+  font-family: var(--font-body) !important;
+  letter-spacing: var(--letter-base) !important;
+  font-weight: 500 !important;
+  --mdc-protected-button-container-shape: var(--r-pill);
+  --mdc-text-button-container-shape: var(--r-pill);
+  --mdc-outlined-button-container-shape: var(--r-pill);
+  --mdc-filled-button-container-shape: var(--r-pill);
+}
+
+// Mini-fab (used in toolbar) — smaller, less chunky.
+.mat-mdc-mini-fab {
+  --mdc-fab-small-container-color: var(--surface);
+  --mdc-fab-small-container-shape: var(--r-md);
+  box-shadow: var(--shadow-rim) !important;
+  color: var(--ink-soft) !important;
+}
+.mat-mdc-mini-fab:hover {
+  background: var(--surface-2) !important;
+  color: var(--ink) !important;
+}
+
+// —— Toggle group (view switcher) ————————————————————————————————————————————
+// The center mode/view selector is Material's button-toggle. Re-skin tightly.
+.mat-button-toggle-group,
+.mat-button-toggle-group-appearance-standard {
+  border-radius: var(--r-pill) !important;
+  border: 1px solid var(--rule) !important;
+  background: var(--surface) !important;
+  box-shadow: none !important;
+  overflow: hidden;
+}
+.mat-button-toggle-appearance-standard {
+  background: transparent !important;
+  border: 0 !important;
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  color: var(--ink-soft) !important;
+}
+.mat-button-toggle-appearance-standard:hover {
+  background: var(--surface-2) !important;
+  color: var(--ink) !important;
+}
+.mat-button-toggle-checked {
+  background: var(--ink) !important;
+  color: var(--bg) !important;
+}
+.mat-button-toggle-checked .mat-icon {
+  color: var(--bg) !important;
+}
+
+// Inner content wrapper for each mat-button-toggle. Default is a plain inline
+// span that doesn't align icon and text — flex it.
+.mat-button-toggle-label-content {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  line-height: 1 !important;
+  padding: 0 var(--space-sm) !important;
+
+  .mat-icon {
+    flex-shrink: 0;
+  }
+}
+.mat-button-toggle-button {
+  display: inline-flex !important;
+  align-items: center;
+  height: 100%;
+}
+
+// —— Form fields ————————————————————————————————————————————————————————————
+.mat-mdc-form-field {
+  font-family: var(--font-body) !important;
+  --mdc-outlined-text-field-outline-color: var(--rule);
+  --mdc-outlined-text-field-hover-outline-color: var(--ink-faint);
+  --mdc-outlined-text-field-focus-outline-color: var(--focus);
+  --mdc-outlined-text-field-container-shape: var(--r-md);
+  --mdc-outlined-text-field-label-text-color: var(--ink-muted);
+  --mdc-outlined-text-field-input-text-color: var(--ink);
+}
+
+// —— Sidenav containers ——————————————————————————————————————————————————————
+// Strip the default Material sidenav border so our visual treatment owns it.
+.mat-drawer,
+.mat-sidenav {
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+  border: 0 !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+.mat-drawer-content {
+  background: transparent !important;
+}
+// Material drawer wraps content in a scroll container with default padding.
+// Reset it — our sidenav components handle their own padding & scroll.
+.mat-drawer-inner-container,
+.mat-sidenav-inner-container {
+  padding: 0 !important;
+  overflow-x: hidden;
+}
+
+// —— Lists ——————————————————————————————————————————————————————————————————
+.mat-mdc-list-item {
+  --mdc-list-list-item-label-text-color: var(--ink);
+  --mdc-list-list-item-supporting-text-color: var(--ink-muted);
+  font-family: var(--font-body) !important;
+}
+
+// —— Dialogs ——————————————————————————————————————————————————————————————————
+.mat-mdc-dialog-container {
+  --mdc-dialog-container-shape: var(--r-lg);
+  --mdc-dialog-container-color: var(--surface);
+  --mdc-dialog-supporting-text-color: var(--ink-soft);
+}

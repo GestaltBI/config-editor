@@ -1,0 +1,22 @@
+<div class="shell">
+  <sbi-toolbar></sbi-toolbar>
+
+  <nav class="shell__tabs" aria-label="Editor sections">
+    <a routerLink="/structure" routerLinkActive="shell__tab--active" class="shell__tab">
+      <mat-icon>view_column</mat-icon>
+      <span>Structure</span>
+    </a>
+    <a routerLink="/processing" routerLinkActive="shell__tab--active" class="shell__tab">
+      <mat-icon>account_tree</mat-icon>
+      <span>Processing</span>
+    </a>
+    <a routerLink="/modes" routerLinkActive="shell__tab--active" class="shell__tab">
+      <mat-icon>list_alt</mat-icon>
+      <span>Modes</span>
+    </a>
+  </nav>
+
+  <main class="shell__viewport">
+    <router-outlet></router-outlet>
+  </main>
+</div>
