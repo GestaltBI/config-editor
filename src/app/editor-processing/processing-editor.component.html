@@ -3,21 +3,59 @@
     <div>
       <span class="eyebrow">processing.json</span>
       <h1 class="processing__title">Process graph</h1>
-      <p class="processing__sub">
-        {{ nodes().length }} steps &middot; rete.js visual graph coming next milestone
-      </p>
+      <p class="processing__sub">{{ nodes().length }} steps</p>
     </div>
     <div class="processing__actions">
-      <button class="btn btn--ghost btn--sm" (click)="enterRaw()">
-        <mat-icon>code</mat-icon> Raw JSON
-      </button>
+      <div class="processing__modes" role="tablist">
+        <button
+          type="button"
+          class="processing__mode"
+          [class.processing__mode--active]="mode() === 'graph'"
+          (click)="setMode('graph')"
+          role="tab"
+        >
+          <mat-icon>account_tree</mat-icon>
+          Graph
+        </button>
+        <button
+          type="button"
+          class="processing__mode"
+          [class.processing__mode--active]="mode() === 'list'"
+          (click)="setMode('list')"
+          role="tab"
+        >
+          <mat-icon>list</mat-icon>
+          List
+        </button>
+        <button
+          type="button"
+          class="processing__mode"
+          [class.processing__mode--active]="mode() === 'raw'"
+          (click)="setMode('raw')"
+          role="tab"
+        >
+          <mat-icon>code</mat-icon>
+          Raw
+        </button>
+      </div>
       <button class="btn btn--solid btn--sm" (click)="addNode()">
         <mat-icon>add</mat-icon> Add step
       </button>
     </div>
   </header>
 
-  <div class="processing__body" *ngIf="!rawMode(); else raw">
+  <!-- GRAPH —————————————————————————————————————————————————— -->
+  <section class="processing__graph" *ngIf="mode() === 'graph'">
+    <div #graphHost class="processing__graph-host"></div>
+    <p class="processing__hint t-caption">
+      Drag nodes to reposition · drag from a node's output socket to another node's input to add it
+      to the downstream's <code>require</code> · select a node and switch to the List tab to edit
+      its options.
+    </p>
+  </section>
+
+  <!-- LIST ——————————————————————————————————————————————————— -->
+  <div class="processing__body" *ngIf="mode() === 'list'">
     <aside class="processing__list">
       <div
         class="processing__node"
@@ -69,17 +107,16 @@
     </ng-template>
   </div>
 
-  <ng-template #raw>
-    <div class="processing__raw">
-      <textarea spellcheck="false" [(ngModel)]="$any(jsonText)['_value']"
-        (input)="jsonText.set($any($event.target).value)"
-      >{{ jsonText() }}</textarea>
-      <div class="processing__raw-actions">
-        <button class="btn btn--ghost btn--sm" (click)="cancelRaw()">Cancel</button>
-        <button class="btn btn--solid btn--sm" (click)="applyRaw()">Apply</button>
-      </div>
+  <!-- RAW —————————————————————————————————————————————————— -->
+  <div class="processing__raw" *ngIf="mode() === 'raw'">
+    <textarea
+      spellcheck="false"
+      (input)="jsonText.set($any($event.target).value)"
+    >{{ jsonText() }}</textarea>
+    <div class="processing__raw-actions">
+      <button class="btn btn--solid btn--sm" (click)="applyRaw()">Apply</button>
     </div>
-  </ng-template>
+  </div>
 </div>
 
 <ng-template #empty>

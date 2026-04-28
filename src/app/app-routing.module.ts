@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
+import { MappingEditorComponent } from './editor-mapping/mapping-editor.component';
 import { ModesEditorComponent } from './editor-modes/modes-editor.component';
 import { ProcessingEditorComponent } from './editor-processing/processing-editor.component';
 import { StructureEditorComponent } from './editor-structure/structure-editor.component';
@@ -13,6 +14,7 @@ const routes: Routes = [
     children: [
       { path: '', redirectTo: 'structure', pathMatch: 'full' },
       { path: 'structure', component: StructureEditorComponent },
+      { path: 'mapping', component: MappingEditorComponent },
       { path: 'processing', component: ProcessingEditorComponent },
       { path: 'modes', component: ModesEditorComponent },
     ],

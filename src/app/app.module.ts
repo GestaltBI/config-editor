@@ -18,6 +18,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { ConnectDialogComponent } from './shell/connect-dialog.component';
 import { ShellComponent } from './shell/shell.component';
 import { ToolbarComponent } from './shell/toolbar.component';
+import { MappingEditorComponent } from './editor-mapping/mapping-editor.component';
 import { ModesEditorComponent } from './editor-modes/modes-editor.component';
 import { ProcessingEditorComponent } from './editor-processing/processing-editor.component';
 import { StructureEditorComponent } from './editor-structure/structure-editor.component';
@@ -34,6 +35,7 @@ provideGlobalGridOptions({ theme: 'legacy' });
     StructureEditorComponent,
     ProcessingEditorComponent,
     ModesEditorComponent,
+    MappingEditorComponent,
   ],
   imports: [
     BrowserModule,

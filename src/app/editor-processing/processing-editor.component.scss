@@ -209,3 +209,72 @@
     }
   }
 }
+
+// —— Mode tabs in the header —————————————————————————————————————————————
+.processing__modes {
+  display: inline-flex;
+  background: var(--surface-2);
+  padding: 2px;
+  border-radius: var(--r-pill);
+  margin-right: var(--space-md);
+}
+.processing__mode {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: 4px var(--space-sm);
+  height: 28px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-muted);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border-radius: var(--r-pill);
+  transition:
+    color var(--motion-fast) var(--ease-out-quart),
+    background var(--motion-fast) var(--ease-out-quart);
+  .mat-icon {
+    font-size: 14px !important;
+    width: 14px !important;
+    height: 14px !important;
+  }
+  &:hover {
+    color: var(--ink);
+  }
+  &--active {
+    background: var(--bg);
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+// —— Rete graph host ————————————————————————————————————————————————————————
+.processing__graph {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.processing__graph-host {
+  flex: 1;
+  min-height: 0;
+  background: var(--surface);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-rim);
+  position: relative;
+
+  // Rete renders nodes via Angular components; surface the canvas with a
+  // subtle grid background to anchor visual orientation.
+  background-image:
+    radial-gradient(
+      circle at 1px 1px,
+      var(--rule) 1px,
+      transparent 1px
+    );
+  background-size: 24px 24px;
+}

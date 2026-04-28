@@ -1,0 +1,55 @@
+<div class="mapping" *ngIf="store.isLoaded(); else empty">
+  <header class="mapping__head">
+    <div>
+      <span class="eyebrow">mapping.json</span>
+      <h1 class="mapping__title">Column mapping</h1>
+      <p class="mapping__sub">
+        {{ rowData().length }} mapped &middot;
+        {{ unmappedRaw().length }} raw unmapped &middot;
+        {{ unmappedTargets().length }} canonical without source
+      </p>
+    </div>
+    <div class="mapping__actions">
+      <button
+        class="btn btn--ghost btn--sm"
+        (click)="scaffoldFromRaw()"
+        [disabled]="!unmappedRaw().length"
+        title="Add a row for each raw CSV column not yet mapped"
+      >
+        <mat-icon>auto_awesome</mat-icon> Scaffold from CSV
+      </button>
+      <button class="btn btn--ghost btn--sm" (click)="removeSelected(grid.api)">
+        <mat-icon>delete</mat-icon> Remove selected
+      </button>
+      <button class="btn btn--solid btn--sm" (click)="addRow()">
+        <mat-icon>add</mat-icon> Add mapping
+      </button>
+    </div>
+  </header>
+
+  <ag-grid-angular
+    #grid
+    class="ag-theme-alpine mapping__grid"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [rowData]="rowData()"
+    [rowSelection]="'multiple'"
+    [suppressRowClickSelection]="true"
+    [singleClickEdit]="true"
+    (cellValueChanged)="onCellValueChanged()"
+  >
+  </ag-grid-angular>
+
+  <p class="mapping__hint t-caption">
+    Each row renames a column from <code>data.csv</code>'s header into the canonical name used by
+    <code>structure.json</code>. The target dropdown lists canonical column codes you defined in
+    the Structure tab.
+  </p>
+</div>
+
+<ng-template #empty>
+  <div class="mapping__empty">
+    <mat-icon>swap_horiz</mat-icon>
+    <p>Open a config repo to edit its column mapping.</p>
+  </div>
+</ng-template>

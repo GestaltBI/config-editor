@@ -1,6 +1,17 @@
-import { Component, computed, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  Injector,
+  OnDestroy,
+  signal,
+  ViewChild,
+} from '@angular/core';
 
 import { ConfigStoreService, ProcessSpec } from '../core/config-store.service';
+import { GraphHandle, ProcessingGraphService } from './processing-graph.service';
 
 const BUILTIN_OPS = [
   'clear',
@@ -22,14 +33,18 @@ interface NodeRow {
   spec: ProcessSpec;
 }
 
+type Mode = 'graph' | 'list' | 'raw';
+
 @Component({
   standalone: false,
   selector: 'sbi-processing-editor',
   templateUrl: './processing-editor.component.html',
   styleUrls: ['./processing-editor.component.scss'],
 })
-export class ProcessingEditorComponent {
+export class ProcessingEditorComponent implements AfterViewInit, OnDestroy {
   readonly ops = BUILTIN_OPS;
+
+  readonly mode = signal<Mode>('graph');
 
   readonly nodes = computed<NodeRow[]>(() => {
     const proc = this.store.processing()?.process ?? {};
@@ -43,11 +58,64 @@ export class ProcessingEditorComponent {
     return this.nodes().find((n) => n.name === name) ?? null;
   });
 
-  /** JSON view text — bound when the user opens raw mode. */
   readonly jsonText = signal<string>('');
-  readonly rawMode = signal(false);
 
-  constructor(public store: ConfigStoreService) {}
+  @ViewChild('graphHost') graphHost?: ElementRef<HTMLElement>;
+  private graph?: GraphHandle;
+  private graphRebuildPending = false;
+
+  constructor(
+    public store: ConfigStoreService,
+    private graphService: ProcessingGraphService,
+    private injector: Injector,
+  ) {
+    effect(() => {
+      this.store.processing();
+      if (this.graph && this.mode() === 'graph') {
+        this.graphRebuildPending = true;
+        queueMicrotask(() => this.maybeRebuildGraph());
+      }
+    });
+  }
+
+  async ngAfterViewInit(): Promise<void> {
+    if (this.mode() === 'graph') {
+      await this.mountGraph();
+    }
+  }
+
+  async ngOnDestroy(): Promise<void> {
+    await this.graph?.destroy();
+  }
+
+  async setMode(mode: Mode): Promise<void> {
+    if (this.mode() === mode) return;
+    this.mode.set(mode);
+    if (mode === 'graph') {
+      queueMicrotask(() => this.mountGraph());
+    } else if (mode === 'raw') {
+      this.jsonText.set(JSON.stringify(this.store.processing() ?? { process: {} }, null, 2));
+    } else {
+      await this.graph?.destroy();
+      this.graph = undefined;
+    }
+  }
+
+  private async mountGraph(): Promise<void> {
+    if (this.graph || !this.graphHost) return;
+    try {
+      this.graph = await this.graphService.mount(this.graphHost.nativeElement, this.injector);
+    } catch (e) {
+      console.error('rete graph mount failed:', e);
+      this.mode.set('list');
+    }
+  }
+
+  private async maybeRebuildGraph(): Promise<void> {
+    if (!this.graph || !this.graphRebuildPending) return;
+    this.graphRebuildPending = false;
+    await this.graph.rebuild();
+  }
 
   select(name: string): void {
     this.selectedName.set(name);
@@ -69,6 +137,11 @@ export class ProcessingEditorComponent {
     if (!proc) return;
     const next = { ...proc.process };
     delete next[name];
+    for (const k of Object.keys(next)) {
+      if (next[k].require?.includes(name)) {
+        next[k] = { ...next[k], require: next[k].require!.filter((r) => r !== name) };
+      }
+    }
     this.store.processing.set({ ...proc, process: next });
     this.store.markDirty();
     if (this.selectedName() === name) this.selectedName.set(null);
@@ -91,14 +164,9 @@ export class ProcessingEditorComponent {
     try {
       options = optionsText.trim() ? JSON.parse(optionsText) : {};
     } catch {
-      return; // ignore malformed JSON; the textarea stays as the user left it
+      return;
     }
     this.patch(name, { options });
-  }
-
-  enterRaw(): void {
-    this.jsonText.set(JSON.stringify(this.store.processing() ?? { process: {} }, null, 2));
-    this.rawMode.set(true);
   }
 
   applyRaw(): void {
@@ -109,14 +177,10 @@ export class ProcessingEditorComponent {
       }
       this.store.processing.set(parsed);
       this.store.markDirty();
-      this.rawMode.set(false);
+      this.setMode('graph');
     } catch (e: any) {
       alert(`Invalid JSON: ${e.message ?? e}`);
     }
-  }
-
-  cancelRaw(): void {
-    this.rawMode.set(false);
   }
 
   private patch(name: string, patch: Partial<ProcessSpec>): void {
