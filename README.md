@@ -9,11 +9,24 @@ A GestaltBI instance is driven by six files at the root of a GitHub repo (`struc
 | Editor | UI |
 |---|---|
 | **Structure** (`structure.json`) | ag-Grid table — column code, type, tags, multi/required flags |
+| **Mapping** (`mapping.json`) | ag-Grid; target dropdown sourced from structure; "Scaffold from CSV" button |
+| **Labels** (`it.json`) | ag-Grid; column-code dropdown sourced from structure; "Scaffold missing" auto-fills humanized labels |
+| **Processing** (`processing.json`) | rete.js graph (default) · step list · raw JSON. Connections express `require[]` and round-trip with the JSON. |
 | **Modes** (`modes.json`) | Reorderable list — id, label key, icon picker |
-| **Processing** (`processing.json`) | Step list + per-step form, raw-JSON fallback. **rete.js graph view is the next milestone** |
-| **Mapping** (`mapping.json`) | _todo_ |
-| **Labels** (`it.json`) | _todo_ |
-| **Data** (`data.csv`) | _todo_ — preview / inline edit |
+| **Data** (`data.csv`) | Read-only ag-Grid preview, first 500 rows |
+
+The toolbar offers a **live preview** button that opens `gestaltbi.github.io/gestaltbi-core/gh/<org>/<repo>/<sha>` for the most recent pushed commit (falls back to the branch ref if you haven't pushed yet this session).
+
+## Push semantics
+
+A push bundles every config file into a **single atomic commit** via the GitHub Git Data API:
+1. Resolve current branch ref → commit sha → tree sha
+2. Create a blob per dirty file
+3. Create a new tree referencing the prior tree + the new blobs
+4. Create a commit on top of the parent
+5. Fast-forward the ref
+
+So one click = one commit, no matter how many files changed.
 
 ## Run
 
@@ -62,14 +75,21 @@ The token never leaves the machine — every request goes directly to `api.githu
 
 ## Roadmap
 
-- [ ] **rete.js processing graph** — drag op nodes from a palette; connect them; per-node panel for options. The current step-list view is a stub.
-- [ ] **Labels editor** — `it.json` column-label dictionary; auto-suggests entries from `structure.json` columns.
-- [ ] **Mapping editor** — visual mapping of raw CSV column → canonical column.
-- [ ] **CSV preview** — read-only ag-Grid view of `data.csv`, optional small-edit support.
-- [ ] **Atomic commit** — bundle all writes into one commit via the Git Data API (tree + commit + ref-update) instead of N file PUTs.
+Done since v0.1.0:
+- ✓ rete.js processing graph (graph view + bidirectional sync with `require[]`)
+- ✓ Mapping editor with scaffold-from-CSV
+- ✓ Labels editor with structure-driven autocomplete
+- ✓ CSV preview (first 500 rows)
+- ✓ Atomic commit via Git Data API
+- ✓ Live preview button → opens `gh/<org>/<repo>/<sha>` via the OS browser
+
+Still ahead:
 - [ ] **OAuth device flow** — replace the PAT paste with proper OAuth so the token can be scoped to just the repos the user picks.
-- [ ] **Live preview** — open `gestaltbi.github.io/gestaltbi-core/gh/<org>/<repo>/<sha>` in the OS browser via Tauri shell after a successful push.
-- [ ] **Icons** — run `npx tauri icon assets/gestaltbi-logo.png` to generate the bundled icon set; commit the output.
+- [ ] **Per-op options forms** — replace the JSON textarea in the processing-step detail with op-specific forms (e.g. dropdowns sourced from structure tags for `geocode.geocoding[].col`).
+- [ ] **Bigger CSV preview** — paginate / virtualize so all rows are inspectable, not just the first 500.
+- [ ] **Validation** — surface broken references (mapping target not in structure, processing.require pointing at a missing step, modes.id not matching processing) as inline lints.
+- [ ] **New-repo flow** — let the user scaffold a fresh config repo in their org from inside the app (via the GitHub API).
+- [ ] **Real Apple/Microsoft signing** — needs a Developer Program membership; once present, no more `xattr -cr` / SmartScreen friction.
 
 ## Stack
 

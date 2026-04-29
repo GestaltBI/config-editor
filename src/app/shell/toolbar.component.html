@@ -28,6 +28,15 @@
       <mat-icon>{{ theme.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
     </button>
     <button
+      class="toolbar__icon"
+      (click)="openPreview()"
+      [disabled]="!store.isLoaded()"
+      aria-label="Open live preview"
+      title="Open live preview at gestaltbi.github.io"
+    >
+      <mat-icon>open_in_new</mat-icon>
+    </button>
+    <button
       class="btn btn--solid btn--sm"
       (click)="push()"
       [disabled]="gh.busy() || !store.isLoaded()"

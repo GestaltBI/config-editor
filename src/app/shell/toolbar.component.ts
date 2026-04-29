@@ -29,11 +29,35 @@ export class ToolbarComponent {
       this.connect();
       return;
     }
-    const message = prompt('Commit message', 'config: update from editor') ?? 'config: update from editor';
+    const message = prompt('Commit message', 'config: update from editor');
+    if (message === null) return;
     try {
-      await this.gh.push(message);
+      await this.gh.push(message || 'config: update from editor');
     } catch (e: any) {
       alert(`Push failed: ${e.message ?? e}`);
+    }
+  }
+
+  /**
+   * Open the deployed gestaltbi-core preview for the current repo at the
+   * latest pushed commit. If running inside Tauri, route through the shell
+   * plugin so the URL opens in the user's default browser; in the browser
+   * dev shell, fall back to window.open.
+   */
+  async openPreview(): Promise<void> {
+    const url = this.gh.previewUrl();
+    try {
+      // Lazy import so the browser dev build doesn't try to evaluate the
+      // Tauri plugin module when the runtime APIs aren't available.
+      const tauri = (window as any).__TAURI_INTERNALS__;
+      if (tauri) {
+        const { open } = await import('@tauri-apps/plugin-shell');
+        await open(url);
+      } else {
+        window.open(url, '_blank', 'noopener');
+      }
+    } catch {
+      window.open(url, '_blank', 'noopener');
     }
   }
 

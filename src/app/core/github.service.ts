@@ -10,19 +10,32 @@ interface ContentsResponse {
   sha: string;
 }
 
+interface FilePayload {
+  path: string;
+  content: string;
+}
+
 /**
  * Minimal GitHub REST client backed by a personal access token. The token is
- * persisted in localStorage; in a Tauri build it should be moved to the
+ * persisted in localStorage; in a Tauri build it should move to the
  * tauri-plugin-store keychain for proper secure storage.
  *
- * We use the Contents API exclusively — no actual git operations — which keeps
- * the dependency surface tiny and avoids any need for git or ssh on the host.
+ * Reads use the Contents API (one call per file). Writes use the Git Data
+ * API to bundle every changed file into a single commit:
+ *   1. resolve current ref → commit sha → tree sha
+ *   2. create blobs for each new file
+ *   3. create a tree referencing the prior tree + the new blobs
+ *   4. create a commit pointing at the new tree
+ *   5. fast-forward the ref to the new commit
  */
 @Injectable({ providedIn: 'root' })
 export class GithubService {
   readonly token = signal<string | null>(this.readToken());
   readonly busy = signal(false);
   readonly status = signal<string>('');
+  /** sha of the most recent commit pushed by this app session, used to
+   *  build a SHA-pinned preview URL after a successful push. */
+  readonly lastCommitSha = signal<string | null>(null);
 
   constructor(private store: ConfigStoreService) {}
 
@@ -69,46 +82,130 @@ export class GithubService {
       this.store.dataCsv.set(dataCsv);
       this.store.isLoaded.set(true);
       this.store.isDirty.set(false);
+      this.lastCommitSha.set(null);
       this.status.set(`Loaded ${org}/${repo}`);
     } finally {
       this.busy.set(false);
     }
   }
 
-  /** Push every dirty config file in a single commit-per-file pass. */
-  async push(commitMessage: string): Promise<void> {
+  /**
+   * Bundle every config file into a single atomic commit via Git Data API.
+   * Returns the new commit sha.
+   */
+  async push(commitMessage: string): Promise<string> {
     if (!this.token()) throw new Error('GitHub token not set');
     const org = this.store.repoOrg();
     const repo = this.store.repoName();
     if (!org || !repo) throw new Error('Repo not selected');
-    const ref = this.store.repoRef();
+    const branch = this.store.repoRef();
 
     this.busy.set(true);
     this.status.set(`Pushing to ${org}/${repo}…`);
+
     try {
-      await this.commit(org, repo, ref, 'structure.json', JSON.stringify(this.store.structure(), null, 2), commitMessage);
-      await this.commit(org, repo, ref, 'processing.json', JSON.stringify(this.store.processing(), null, 2), commitMessage);
-      await this.commit(org, repo, ref, 'modes.json', JSON.stringify(this.store.modes(), null, 2), commitMessage);
+      const files: FilePayload[] = [];
+      const s = this.store.structure();
+      const p = this.store.processing();
+      if (s) files.push({ path: 'structure.json', content: JSON.stringify(s, null, 2) });
+      if (p) files.push({ path: 'processing.json', content: JSON.stringify(p, null, 2) });
+      files.push({ path: 'modes.json', content: JSON.stringify(this.store.modes(), null, 2) });
       const mapping = this.store.mapping();
-      if (mapping) await this.commit(org, repo, ref, 'mapping.json', JSON.stringify(mapping, null, 2), commitMessage);
+      if (mapping) files.push({ path: 'mapping.json', content: JSON.stringify(mapping, null, 2) });
       const labels = this.store.labels();
-      if (labels) await this.commit(org, repo, ref, 'it.json', JSON.stringify(labels, null, 2), commitMessage);
+      if (labels) files.push({ path: 'it.json', content: JSON.stringify(labels, null, 2) });
+
+      // 1. Current ref → commit sha → tree sha.
+      const refRes = await this.api(`repos/${org}/${repo}/git/ref/heads/${branch}`);
+      const refJson = await refRes.json();
+      const parentCommitSha: string = refJson.object.sha;
+
+      const commitRes = await this.api(`repos/${org}/${repo}/git/commits/${parentCommitSha}`);
+      const commitJson = await commitRes.json();
+      const baseTreeSha: string = commitJson.tree.sha;
+
+      // 2. Blob per file.
+      const blobs = await Promise.all(
+        files.map(async (f) => {
+          const r = await this.api(`repos/${org}/${repo}/git/blobs`, {
+            method: 'POST',
+            body: JSON.stringify({ content: f.content, encoding: 'utf-8' }),
+          });
+          const j = await r.json();
+          return { path: f.path, sha: j.sha as string };
+        }),
+      );
+
+      // 3. New tree referencing prior tree + the new blobs.
+      const treeRes = await this.api(`repos/${org}/${repo}/git/trees`, {
+        method: 'POST',
+        body: JSON.stringify({
+          base_tree: baseTreeSha,
+          tree: blobs.map((b) => ({ path: b.path, mode: '100644', type: 'blob', sha: b.sha })),
+        }),
+      });
+      const treeJson = await treeRes.json();
+      const newTreeSha: string = treeJson.sha;
+
+      // 4. New commit on top of parent.
+      const newCommitRes = await this.api(`repos/${org}/${repo}/git/commits`, {
+        method: 'POST',
+        body: JSON.stringify({
+          message: commitMessage,
+          tree: newTreeSha,
+          parents: [parentCommitSha],
+        }),
+      });
+      const newCommitJson = await newCommitRes.json();
+      const newCommitSha: string = newCommitJson.sha;
+
+      // 5. Fast-forward the branch.
+      await this.api(`repos/${org}/${repo}/git/refs/heads/${branch}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ sha: newCommitSha, force: false }),
+      });
 
       this.store.isDirty.set(false);
-      this.status.set('Pushed.');
+      this.lastCommitSha.set(newCommitSha);
+      this.status.set(`Pushed @${newCommitSha.substring(0, 7)}`);
+      return newCommitSha;
     } finally {
       this.busy.set(false);
     }
   }
 
-  private headers(): HeadersInit {
+  /** Build the SHA-pinned `gh/<org>/<repo>/<sha>` preview URL on
+   *  gestaltbi.github.io. Falls back to the branch ref if no commit
+   *  has been pushed this session yet. */
+  previewUrl(): string {
+    const org = this.store.repoOrg();
+    const repo = this.store.repoName();
+    const ref = this.lastCommitSha() ?? this.store.repoRef();
+    return `https://gestaltbi.github.io/gestaltbi-core/gh/${org}/${repo}/${ref}`;
+  }
+
+  private headers(extra: Record<string, string> = {}): HeadersInit {
     const h: Record<string, string> = {
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
+      ...extra,
     };
     const t = this.token();
     if (t) h['Authorization'] = `Bearer ${t}`;
     return h;
+  }
+
+  private async api(path: string, init: RequestInit = {}): Promise<Response> {
+    const url = `https://api.github.com/${path}`;
+    const headers = this.headers(
+      init.body ? { 'Content-Type': 'application/json' } : {},
+    );
+    const res = await fetch(url, { ...init, headers });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`${res.status} ${path}: ${err}`);
+    }
+    return res;
   }
 
   private async fetchJson<T>(org: string, repo: string, ref: string, path: string): Promise<T> {
@@ -122,45 +219,6 @@ export class GithubService {
     if (!res.ok) throw new Error(`${res.status} ${path}`);
     const json = (await res.json()) as ContentsResponse;
     return atob(json.content.replace(/\n/g, ''));
-  }
-
-  private async commit(
-    org: string,
-    repo: string,
-    branch: string,
-    path: string,
-    content: string,
-    message: string,
-  ): Promise<void> {
-    // Need the current sha of the file (if it exists) to update vs create.
-    const url = `https://api.github.com/repos/${org}/${repo}/contents/${encodeURIComponent(path)}`;
-    let sha: string | undefined;
-    try {
-      const head = await fetch(`${url}?ref=${encodeURIComponent(branch)}`, { headers: this.headers() });
-      if (head.ok) {
-        const j = await head.json();
-        sha = j.sha;
-      }
-    } catch {
-      /* file doesn't exist yet */
-    }
-
-    const body = {
-      message,
-      content: btoa(content),
-      branch,
-      ...(sha ? { sha } : {}),
-    };
-
-    const res = await fetch(url, {
-      method: 'PUT',
-      headers: { ...this.headers(), 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`${res.status} ${path}: ${err}`);
-    }
   }
 
   private readToken(): string | null {

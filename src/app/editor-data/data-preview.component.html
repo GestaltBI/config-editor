@@ -1,0 +1,34 @@
+<div class="data" *ngIf="store.isLoaded() && parsed(); else empty">
+  <header class="data__head">
+    <div>
+      <span class="eyebrow">data.csv</span>
+      <h1 class="data__title">Dataset preview</h1>
+      <p class="data__sub">
+        {{ parsed()!.totalRows.toLocaleString() }} total rows &middot;
+        {{ parsed()!.headers.length }} columns &middot;
+        showing first {{ parsed()!.rows.length }}
+      </p>
+    </div>
+  </header>
+
+  <ag-grid-angular
+    class="ag-theme-alpine data__grid"
+    [columnDefs]="columnDefs()"
+    [defaultColDef]="defaultColDef"
+    [rowData]="parsed()!.rows"
+  >
+  </ag-grid-angular>
+
+  <p class="data__hint t-caption">
+    Read-only preview limited to the first 500 rows. To replace the dataset, push a new
+    <code>data.csv</code> to the repo (the editor doesn't write it back from this view yet).
+  </p>
+</div>
+
+<ng-template #empty>
+  <div class="data__empty">
+    <mat-icon>table_view</mat-icon>
+    <p *ngIf="!store.isLoaded()">Open a config repo to preview its dataset.</p>
+    <p *ngIf="store.isLoaded() && !parsed()">No <code>data.csv</code> in this repo.</p>
+  </div>
+</ng-template>

@@ -1,0 +1,58 @@
+<div class="labels" *ngIf="store.isLoaded(); else empty">
+  <header class="labels__head">
+    <div>
+      <span class="eyebrow">it.json</span>
+      <h1 class="labels__title">Column labels</h1>
+      <p class="labels__sub">
+        {{ rowData().length }} entries &middot;
+        {{ missing().length }} missing &middot;
+        <ng-container *ngIf="orphans().length"
+          >{{ orphans().length }} orphan{{ orphans().length === 1 ? '' : 's' }}</ng-container
+        >
+        <ng-container *ngIf="!orphans().length">all keys map to a column</ng-container>
+      </p>
+    </div>
+    <div class="labels__actions">
+      <button
+        class="btn btn--ghost btn--sm"
+        (click)="scaffoldFromStructure()"
+        [disabled]="!missing().length"
+        title="Add a row for each canonical column without a label"
+      >
+        <mat-icon>auto_awesome</mat-icon> Scaffold missing
+      </button>
+      <button class="btn btn--ghost btn--sm" (click)="removeSelected(grid.api)">
+        <mat-icon>delete</mat-icon> Remove selected
+      </button>
+      <button class="btn btn--solid btn--sm" (click)="addRow()">
+        <mat-icon>add</mat-icon> Add label
+      </button>
+    </div>
+  </header>
+
+  <ag-grid-angular
+    #grid
+    class="ag-theme-alpine labels__grid"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [rowData]="rowData()"
+    [rowSelection]="'multiple'"
+    [suppressRowClickSelection]="true"
+    [singleClickEdit]="true"
+    (cellValueChanged)="onCellValueChanged()"
+  >
+  </ag-grid-angular>
+
+  <p class="labels__hint t-caption">
+    The labels file is a flat dictionary of <code>columnCode → human label</code>. Used by the
+    legend, filters, and chart titles in <code>gestaltbi-core</code>. The dropdown for
+    "column code" is sourced from the columns defined in the <strong>Structure</strong> tab.
+  </p>
+</div>
+
+<ng-template #empty>
+  <div class="labels__empty">
+    <mat-icon>label</mat-icon>
+    <p>Open a config repo to edit its column labels.</p>
+  </div>
+</ng-template>
