@@ -1,6 +1,6 @@
 [package]
 name = "config-editor"
-version = "0.5.0"
+version = "0.5.1"
 description = "GestaltBI configuration editor"
 authors = ["GestaltBI"]
 edition = "2021"

@@ -61,7 +61,9 @@ jobs:
       # (https://github.com/npm/cli/issues/4828) that drops platform-specific
       # native bindings of @tauri-apps/cli when the lockfile was generated
       # on a different OS.
-      - run: rm -f package-lock.json && npm install --no-audit --fund=false
+      - name: Reconcile lockfile and install
+        shell: bash
+        run: rm -f package-lock.json && npm install --no-audit --fund=false
 
       - name: Build & release
         uses: tauri-apps/tauri-action@v0
