@@ -31,4 +31,20 @@
   <main class="shell__viewport">
     <router-outlet></router-outlet>
   </main>
+
+  <div class="shell__dropzone" *ngIf="dragging()" aria-hidden="true">
+    <div class="shell__dropzone-card">
+      <mat-icon class="shell__dropzone-icon">upload_file</mat-icon>
+      <div class="shell__dropzone-title">Drop a CSV to scaffold</div>
+      <div class="shell__dropzone-sub" *ngIf="store.isLoaded(); else needsSource">
+        We'll infer column types and tags, fill mapping &amp; labels, and replace
+        <code>data.csv</code>. Existing entries are kept.
+      </div>
+      <ng-template #needsSource>
+        <div class="shell__dropzone-sub">
+          Open a folder or repo first — inferred config needs a destination.
+        </div>
+      </ng-template>
+    </div>
+  </div>
 </div>

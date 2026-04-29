@@ -94,9 +94,14 @@ For the **Local folder** source, no app-level auth is needed — git inherits wh
 
 ## Authoring flow
 
-1. **Open** → pick a GitHub repo or a local folder. The six files load into the in-memory store.
-2. **Edit** in the relevant tab. Local edits set the dirty marker; nothing is written until you save/push.
-3. **Save & push** (local) or **Push** (GitHub):
+1. **Open** → pick a GitHub repo or a local folder (an empty folder works fine for fresh configs). The six files load into the in-memory store.
+2. **Drop a CSV** anywhere on the window to seed the config from real data. The editor:
+   - parses headers, samples up to 200 rows for type inference (`number` / `date` / `boolean` / `string`)
+   - matches column names against geo / time heuristics (`lat`, `lng`, `city`, `regione`, `comune`, `cap`, `data`, `timestamp`, …) to assign tags
+   - merges into the existing structure / mapping / labels — never overwrites entries you already authored
+   - replaces `data.csv` with the dropped file
+3. **Edit** in the relevant tab. Local edits set the dirty marker; nothing is written until you save/push.
+4. **Save & push** (local) or **Push** (GitHub):
    - GitHub: a single atomic commit via the Git Data API.
    - Local + git repo: writes files, then `git add -A && git commit && git push`.
    - Local, not a git repo: just writes files. You're on your own from there.
@@ -111,6 +116,7 @@ Done since v0.1.0:
 - ✓ Atomic commit via Git Data API
 - ✓ Live preview button → opens `gh/<org>/<repo>/<sha>` via the OS browser
 - ✓ Local folder source via `tauri-plugin-fs` + system `git` for offline / private-remote / non-GitHub workflows
+- ✓ **Drop a CSV** anywhere on the window to scaffold structure / mapping / labels and replace `data.csv`. Type inference (number / date / boolean / string) plus tag heuristics for common geo & time column names (IT + EN). Existing entries are kept — drops are non-destructive, only missing keys get filled in.
 
 Still ahead:
 - [ ] **OAuth device flow** — replace the PAT paste with proper OAuth so the token can be scoped to just the repos the user picks.
