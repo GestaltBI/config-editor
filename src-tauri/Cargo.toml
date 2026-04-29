@@ -1,6 +1,6 @@
 [package]
 name = "config-editor"
-version = "0.3.0"
+version = "0.3.1"
 description = "GestaltBI configuration editor"
 authors = ["GestaltBI"]
 edition = "2021"
@@ -16,6 +16,5 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 tauri-plugin-shell = "2"
-tauri-plugin-store = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

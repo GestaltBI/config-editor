@@ -1,6 +1,6 @@
 {
   "name": "config-editor",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "engines": {
     "node": ">=20.19.0"
@@ -29,7 +29,6 @@
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-dialog": "^2.0.0",
     "@tauri-apps/plugin-shell": "^2.0.0",
-    "@tauri-apps/plugin-store": "^2.0.0",
     "ag-grid-angular": "^33.0.0",
     "ag-grid-community": "^33.0.0",
     "rete": "^2.0.0",
