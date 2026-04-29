@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { ConfigStoreService } from '../core/config-store.service';
 import { GithubService } from '../core/github.service';
+import { LocalBackendService } from '../core/local-backend.service';
 import { ThemeService } from '../core/theme.service';
 import { ConnectDialogComponent } from './connect-dialog.component';
 
@@ -16,15 +17,31 @@ export class ToolbarComponent {
   constructor(
     public store: ConfigStoreService,
     public gh: GithubService,
+    public local: LocalBackendService,
     public theme: ThemeService,
     private dialog: MatDialog,
   ) {}
 
+  busy(): boolean {
+    return this.gh.busy() || this.local.busy();
+  }
+
+  status(): string {
+    return this.gh.status() || this.local.status();
+  }
+
   connect(): void {
-    this.dialog.open(ConnectDialogComponent, { width: '480px' });
+    this.dialog.open(ConnectDialogComponent, { width: '560px' });
   }
 
   async push(): Promise<void> {
+    const kind = this.store.sourceKind();
+    if (kind === 'github') return this.pushGithub();
+    if (kind === 'local') return this.pushLocal();
+    this.connect();
+  }
+
+  private async pushGithub(): Promise<void> {
     if (!this.gh.token()) {
       this.connect();
       return;
@@ -38,17 +55,33 @@ export class ToolbarComponent {
     }
   }
 
-  /**
-   * Open the deployed gestaltbi-core preview for the current repo at the
-   * latest pushed commit. If running inside Tauri, route through the shell
-   * plugin so the URL opens in the user's default browser; in the browser
-   * dev shell, fall back to window.open.
-   */
+  private async pushLocal(): Promise<void> {
+    try {
+      const written = await this.local.save();
+      if (!this.store.localIsGitRepo()) {
+        // Not a git repo — files saved, leave the rest to the user.
+        return;
+      }
+      const message = prompt(
+        `Saved ${written} file${written === 1 ? '' : 's'}. Commit & push to remote?\n\nCommit message:`,
+        'config: update from editor',
+      );
+      if (message === null) return; // user cancelled the git step; files still saved
+      await this.local.gitPush(message || 'config: update from editor');
+    } catch (e: any) {
+      alert(`Push failed: ${e.message ?? e}`);
+    }
+  }
+
   async openPreview(): Promise<void> {
+    if (this.store.sourceKind() !== 'github') {
+      alert(
+        'Live preview is only available for GitHub-backed repos — gestaltbi-core fetches the config from jsDelivr.',
+      );
+      return;
+    }
     const url = this.gh.previewUrl();
     try {
-      // Lazy import so the browser dev build doesn't try to evaluate the
-      // Tauri plugin module when the runtime APIs aren't available.
       const tauri = (window as any).__TAURI_INTERNALS__;
       if (tauri) {
         const { open } = await import('@tauri-apps/plugin-shell');

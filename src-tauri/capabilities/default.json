@@ -7,6 +7,25 @@
     "core:default",
     "dialog:default",
     "shell:default",
-    "shell:allow-open"
+    "shell:allow-open",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        { "name": "git", "cmd": "git", "args": true }
+      ]
+    },
+    "fs:default",
+    "fs:allow-read-text-file",
+    "fs:allow-write-text-file",
+    "fs:allow-exists",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        "$HOME/**/*",
+        "$DOCUMENT/**/*",
+        "$DESKTOP/**/*",
+        "$DOWNLOAD/**/*"
+      ]
+    }
   ]
 }

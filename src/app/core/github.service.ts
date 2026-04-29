@@ -61,6 +61,7 @@ export class GithubService {
     this.busy.set(true);
     this.status.set(`Loading ${org}/${repo}@${ref}…`);
     try {
+      this.store.sourceKind.set('github');
       this.store.repoOrg.set(org);
       this.store.repoName.set(repo);
       this.store.repoRef.set(ref);

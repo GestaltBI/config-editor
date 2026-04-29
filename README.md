@@ -2,7 +2,7 @@
 
 Tauri 2 + Angular 21 desktop editor for [GestaltBI](https://github.com/GestaltBI) configuration repos.
 
-A GestaltBI instance is driven by six files at the root of a GitHub repo (`structure.json`, `processing.json`, `modes.json`, `mapping.json`, `it.json`, `data.csv`). This app loads them, lets you edit each one with a purpose-built UI, and pushes them back via the GitHub Contents API. The [`gestaltbi-core`](https://github.com/GestaltBI/gestaltbi-core) client picks up changes immediately at `https://gestaltbi.github.io/gestaltbi-core/gh/<your-org>/<your-repo>`.
+A GestaltBI instance is driven by six files at the root of a repo (`structure.json`, `processing.json`, `modes.json`, `mapping.json`, `it.json`, `data.csv`). This app loads them, lets you edit each one with a purpose-built UI, and writes them back — either to a **GitHub repo** via the Git Data API (single atomic commit), or to a **local folder** on disk, optionally followed by a `git push` through your system `git`. The [`gestaltbi-core`](https://github.com/GestaltBI/gestaltbi-core) client picks up GitHub-hosted configs immediately at `https://gestaltbi.github.io/gestaltbi-core/gh/<your-org>/<your-repo>`.
 
 ## Status
 
@@ -17,16 +17,41 @@ A GestaltBI instance is driven by six files at the root of a GitHub repo (`struc
 
 The toolbar offers a **live preview** button that opens `gestaltbi.github.io/gestaltbi-core/gh/<org>/<repo>/<sha>` for the most recent pushed commit (falls back to the branch ref if you haven't pushed yet this session).
 
-## Push semantics
+## Sources
 
-A push bundles every config file into a **single atomic commit** via the GitHub Git Data API:
+The toolbar's **Open** dialog has two tabs:
+
+### GitHub repo
+
+Pulls and pushes via the GitHub REST API. Reads use the Contents API; pushes bundle every changed file into a **single atomic commit** via the Git Data API:
 1. Resolve current branch ref → commit sha → tree sha
 2. Create a blob per dirty file
 3. Create a new tree referencing the prior tree + the new blobs
 4. Create a commit on top of the parent
 5. Fast-forward the ref
 
-So one click = one commit, no matter how many files changed.
+One click = one commit, no matter how many files changed. Requires a personal access token (see [Auth](#auth)). The **Live preview** button only lights up for this source kind, since the gestaltbi-core preview is GitHub-pinned.
+
+### Local folder
+
+Reads and writes the six files directly on disk, via `tauri-plugin-fs`. Pick any folder containing the files (or a fresh empty folder); **Save** writes back any dirty files in place.
+
+If the folder is a git working tree (`.git/` present), Save runs the system `git` for you:
+
+```sh
+git add -A
+git commit -m "<message>"
+git push
+```
+
+…using your existing SSH keys / credential helpers — the editor never touches them. The commit prompt only appears after a successful save, and the message defaults to `config: update from editor`. If the folder isn't a git repo, Save just writes the files and stops there.
+
+This lets you:
+- author config locally (e.g. against a private remote, a non-GitHub remote, or no remote at all)
+- review the diff in your usual git client before pushing
+- keep working when the GitHub API is rate-limited or unreachable
+
+Local-folder mode requires the desktop build — the browser dev server (`npm start`) can't access the filesystem.
 
 ## Run
 
@@ -63,15 +88,18 @@ Just `chmod +x` the AppImage and run it, or `dpkg -i` the .deb.
 
 ## Auth
 
-The app uses a **GitHub personal access token** with `repo` scope, stored in `localStorage` for now. Click **Open repo** in the toolbar, paste the token, the org/repo name, optional branch (default `master`).
+For the **GitHub** source, the app uses a personal access token with `repo` scope, stored in `localStorage` for now. Click **Open** in the toolbar, paste the token, the org/repo name, optional branch (default `master`). The token never leaves the machine — every request goes directly to `api.github.com`. In a production Tauri build, the token should move to `tauri-plugin-store` (or the OS keychain via a secure-storage plugin).
 
-The token never leaves the machine — every request goes directly to `api.github.com`. In a production Tauri build, the token should move to `tauri-plugin-store` (or the OS keychain via a secure-storage plugin).
+For the **Local folder** source, no app-level auth is needed — git inherits whatever auth your system already has (SSH keys, `gh auth`, `~/.git-credentials`, etc.).
 
 ## Authoring flow
 
-1. **Open repo** → `org/repo` resolved via the GitHub Contents API. The six files load into the in-memory store.
-2. **Edit** in the relevant tab. Local edits set the dirty marker; nothing is written to GitHub until you push.
-3. **Push** → one PUT-per-file via Contents API. Single commit-per-file at the moment; bundling into a single commit via the Git Data API is on the roadmap.
+1. **Open** → pick a GitHub repo or a local folder. The six files load into the in-memory store.
+2. **Edit** in the relevant tab. Local edits set the dirty marker; nothing is written until you save/push.
+3. **Save & push** (local) or **Push** (GitHub):
+   - GitHub: a single atomic commit via the Git Data API.
+   - Local + git repo: writes files, then `git add -A && git commit && git push`.
+   - Local, not a git repo: just writes files. You're on your own from there.
 
 ## Roadmap
 
@@ -82,6 +110,7 @@ Done since v0.1.0:
 - ✓ CSV preview (first 500 rows)
 - ✓ Atomic commit via Git Data API
 - ✓ Live preview button → opens `gh/<org>/<repo>/<sha>` via the OS browser
+- ✓ Local folder source via `tauri-plugin-fs` + system `git` for offline / private-remote / non-GitHub workflows
 
 Still ahead:
 - [ ] **OAuth device flow** — replace the PAT paste with proper OAuth so the token can be scoped to just the repos the user picks.

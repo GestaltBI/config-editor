@@ -5,44 +5,47 @@
   </div>
 
   <div class="toolbar__repo" *ngIf="store.isLoaded(); else placeholder">
-    <mat-icon>folder_open</mat-icon>
+    <mat-icon>{{ store.sourceKind() === 'local' ? 'folder' : 'cloud' }}</mat-icon>
     <span class="toolbar__repo-text">
-      {{ store.repoOrg() }}/{{ store.repoName() }}
-      <span class="toolbar__repo-ref">@{{ store.repoRef() }}</span>
+      {{ store.sourceLabel() }}
+      <span class="toolbar__repo-ref" *ngIf="store.sourceKind() === 'local' && !store.localIsGitRepo()">
+        · not a git repo
+      </span>
     </span>
     <span class="toolbar__dirty" *ngIf="store.isDirty()" title="Unsaved changes">●</span>
-    <button class="toolbar__icon" (click)="connect()" aria-label="Switch repo">
+    <button class="toolbar__icon" (click)="connect()" aria-label="Switch source">
       <mat-icon>swap_horiz</mat-icon>
     </button>
   </div>
   <ng-template #placeholder>
     <button class="btn btn--outline btn--sm toolbar__connect" (click)="connect()">
       <mat-icon>folder_open</mat-icon>
-      Open repo
+      Open
     </button>
   </ng-template>
 
   <div class="toolbar__actions">
-    <span class="toolbar__status" *ngIf="gh.status()">{{ gh.status() }}</span>
+    <span class="toolbar__status" *ngIf="status()">{{ status() }}</span>
     <button class="toolbar__icon" (click)="toggleTheme()" aria-label="Toggle theme">
       <mat-icon>{{ theme.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
     </button>
     <button
       class="toolbar__icon"
       (click)="openPreview()"
-      [disabled]="!store.isLoaded()"
+      [disabled]="!store.isLoaded() || store.sourceKind() !== 'github'"
       aria-label="Open live preview"
-      title="Open live preview at gestaltbi.github.io"
+      title="Open live preview at gestaltbi.github.io (GitHub-backed repos only)"
     >
       <mat-icon>open_in_new</mat-icon>
     </button>
     <button
       class="btn btn--solid btn--sm"
       (click)="push()"
-      [disabled]="gh.busy() || !store.isLoaded()"
+      [disabled]="busy() || !store.isLoaded()"
+      [title]="store.sourceKind() === 'local' ? 'Save to disk + git push if applicable' : 'Push to GitHub via API'"
     >
-      <mat-icon>cloud_upload</mat-icon>
-      <span>Push</span>
+      <mat-icon>{{ store.sourceKind() === 'local' ? 'save' : 'cloud_upload' }}</mat-icon>
+      <span>{{ store.sourceKind() === 'local' ? (store.localIsGitRepo() ? 'Save & push' : 'Save') : 'Push' }}</span>
     </button>
   </div>
 </header>

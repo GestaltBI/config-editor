@@ -1,40 +1,100 @@
 <div class="connect">
   <h2 class="connect__title">Open a config repo</h2>
-  <p class="connect__lede">
-    The editor reads and writes the six config files via the GitHub API. A personal access
-    token with <code>repo</code> scope is required to push.
-  </p>
 
-  <div class="connect__row">
-    <mat-form-field appearance="outline">
-      <mat-label>Organization</mat-label>
-      <input matInput [(ngModel)]="org" placeholder="GestaltBI" />
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Repo</mat-label>
-      <input matInput [(ngModel)]="repo" placeholder="sample-config" />
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="connect__ref">
-      <mat-label>Branch</mat-label>
-      <input matInput [(ngModel)]="ref" placeholder="master" />
-    </mat-form-field>
+  <div class="connect__tabs" role="tablist">
+    <button
+      type="button"
+      class="connect__tab"
+      [class.connect__tab--active]="tab() === 'github'"
+      (click)="setTab('github')"
+      role="tab"
+    >
+      <mat-icon>cloud</mat-icon> GitHub
+    </button>
+    <button
+      type="button"
+      class="connect__tab"
+      [class.connect__tab--active]="tab() === 'local'"
+      (click)="setTab('local')"
+      role="tab"
+    >
+      <mat-icon>folder_open</mat-icon> Local folder
+    </button>
   </div>
 
-  <mat-form-field appearance="outline" class="connect__token">
-    <mat-label>Personal access token</mat-label>
-    <input matInput type="password" [(ngModel)]="token" placeholder="ghp_…" />
-    <mat-hint>Stored locally, never sent anywhere except api.github.com.</mat-hint>
-  </mat-form-field>
+  <ng-container *ngIf="tab() === 'github'">
+    <p class="connect__lede">
+      The editor reads and writes the six config files via the GitHub API. A personal access
+      token with <code>repo</code> scope is required to push.
+    </p>
+
+    <div class="connect__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Organization</mat-label>
+        <input matInput [(ngModel)]="org" placeholder="GestaltBI" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Repo</mat-label>
+        <input matInput [(ngModel)]="repo" placeholder="sample-config" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="connect__ref">
+        <mat-label>Branch</mat-label>
+        <input matInput [(ngModel)]="ref" placeholder="master" />
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="connect__token">
+      <mat-label>Personal access token</mat-label>
+      <input matInput type="password" [(ngModel)]="token" placeholder="ghp_…" />
+      <mat-hint>Stored locally, sent only to api.github.com.</mat-hint>
+    </mat-form-field>
+  </ng-container>
+
+  <ng-container *ngIf="tab() === 'local'">
+    <p class="connect__lede">
+      Read and write the six files directly on disk. If the folder is a git working tree,
+      <strong>Push</strong> runs <code>git add -A &amp;&amp; git commit &amp;&amp; git push</code>
+      via your system's <code>git</code> binary — your local SSH config / credentials apply.
+    </p>
+
+    <div class="connect__pickrow">
+      <mat-form-field appearance="outline" class="connect__path">
+        <mat-label>Folder path</mat-label>
+        <input matInput [(ngModel)]="localPath" placeholder="/Users/you/configs/myproject" />
+      </mat-form-field>
+      <button class="btn btn--outline btn--sm connect__pick" (click)="pickFolder()">
+        <mat-icon>folder_open</mat-icon>
+        Browse…
+      </button>
+    </div>
+
+    <p class="connect__hint t-caption" *ngIf="!local.isAvailable()">
+      Folder mode requires the desktop build — the browser dev server can't access the
+      filesystem. Run <code>npm run tauri:dev</code> or use a packaged release.
+    </p>
+  </ng-container>
 
   <p class="connect__error" *ngIf="error">{{ error }}</p>
 
   <div class="connect__actions">
     <button class="btn btn--ghost" (click)="close()">Cancel</button>
-    <button class="btn btn--solid" (click)="load()" [disabled]="gh.busy()">
-      <mat-icon>folder_open</mat-icon>
+    <button
+      class="btn btn--solid"
+      *ngIf="tab() === 'github'"
+      (click)="loadGithub()"
+      [disabled]="gh.busy()"
+    >
+      <mat-icon>cloud_download</mat-icon>
       <span>{{ gh.busy() ? 'Loading…' : 'Open' }}</span>
+    </button>
+    <button
+      class="btn btn--solid"
+      *ngIf="tab() === 'local'"
+      (click)="loadLocal()"
+      [disabled]="local.busy() || !local.isAvailable()"
+    >
+      <mat-icon>folder_open</mat-icon>
+      <span>{{ local.busy() ? 'Loading…' : 'Open' }}</span>
     </button>
   </div>
 </div>
