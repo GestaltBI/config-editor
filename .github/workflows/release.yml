@@ -56,7 +56,12 @@ jobs:
             libgtk-3-dev \
             libssl-dev
 
-      - run: npm ci
+      # Use `npm install` (not `npm ci`) so the lockfile reconciles against
+      # the runner's platform — works around npm's optional-dependencies bug
+      # (https://github.com/npm/cli/issues/4828) that drops platform-specific
+      # native bindings of @tauri-apps/cli when the lockfile was generated
+      # on a different OS.
+      - run: rm -f package-lock.json && npm install --no-audit --fund=false
 
       - name: Build & release
         uses: tauri-apps/tauri-action@v0
